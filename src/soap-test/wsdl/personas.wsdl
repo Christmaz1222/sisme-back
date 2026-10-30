@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:tns="urn:sisme:pruebas"
+  targetNamespace="urn:sisme:pruebas"
+  name="PersonasService">
+
+  <types>
+    <xs:schema
+      targetNamespace="urn:sisme:pruebas"
+      elementFormDefault="qualified">
+
+      <xs:element name="ConsultarPersona">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Documento"
+                        type="xs:string"/>
+            <xs:element name="Pais"
+                        type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:element name="ConsultarPersonaResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Codigo"
+                        type="xs:string"/>
+            <xs:element name="Encontrado"
+                        type="xs:boolean"/>
+            <xs:element name="Nombre"
+                        type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+    </xs:schema>
+  </types>
+
+  <message name="ConsultarPersonaInput">
+    <part name="parameters"
+          element="tns:ConsultarPersona"/>
+  </message>
+
+  <message name="ConsultarPersonaOutput">
+    <part name="parameters"
+          element="tns:ConsultarPersonaResponse"/>
+  </message>
+
+  <portType name="PersonasPortType">
+    <operation name="ConsultarPersona">
+      <input message="tns:ConsultarPersonaInput"/>
+      <output message="tns:ConsultarPersonaOutput"/>
+    </operation>
+  </portType>
+
+  <binding name="PersonasBinding"
+           type="tns:PersonasPortType">
+    <soap:binding
+      style="document"
+      transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <operation name="ConsultarPersona">
+      <soap:operation
+        soapAction="urn:sisme:pruebas:ConsultarPersona"/>
+
+      <input>
+        <soap:body use="literal"/>
+      </input>
+
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+
+  <service name="PersonasService">
+    <port name="PersonasPort"
+          binding="tns:PersonasBinding">
+      <soap:address
+        location="http://localhost:3000/soap/personas"/>
+    </port>
+  </service>
+</definitions>

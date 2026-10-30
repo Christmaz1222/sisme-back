@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CategoriaConsulta {
+  PERSONAS
+  ARMAS
+  VEHICULOS
+}
+
+enum EstadoSolicitud {
+  ACTIVA
+  FINALIZADA
+  VENCIDA
+}
+
+enum EstadoConsulta {
+  PENDIENTE
+  COMPLETADA
+  ERROR
+}
+
+model Funcionario {
+  id              Int      @id @default(autoincrement())
+  identificador   String   @unique
+  nombres         String
+  apellidos       String
+  grado           String
+  unidad          String
+  tipoDocumento   String
+  numeroDocumento String
+  activo          Boolean  @default(true)
+  creadoEn        DateTime @default(now()) @db.Timestamptz(3)
+  actualizadoEn   DateTime @updatedAt @db.Timestamptz(3)
+
+  solicitudes Solicitud[]
+
+  @@map("funcionarios")
+}
+
+model Solicitud {
+  id            String              @id @default(uuid()) @db.Uuid
+  funcionarioId Int
+  tipoActuacion String
+  referencia    String
+  justificacion String              @db.Text
+  categorias    CategoriaConsulta[]
+  estado        EstadoSolicitud     @default(ACTIVA)
+  fechaInicio   DateTime            @default(now()) @db.Timestamptz(3)
+  fechaFin      DateTime?           @db.Timestamptz(3)
+
+  // Información de control registrada al iniciar la sesión.
+  codigoControl           String @unique
+  operadorIdOrigen        Int
+  tipoDocumentoOperador   String
+  numeroDocumentoOperador String
+  paisOrigen              String @db.VarChar(2)
+  organismoSolicitante    String
+  husoHorarioMinutos      Int
+
+  funcionario Funcionario @relation(fields: [funcionarioId], references: [id], onDelete: Restrict)
+
+  consultas Consulta[]
+
+  @@index([funcionarioId, fechaInicio])
+  @@index([estado])
+  @@map("solicitudes")
+}
+
+model Consulta {
+  id                 String            @id @default(uuid()) @db.Uuid
+  solicitudId        String            @db.Uuid
+  categoria          CategoriaConsulta
+  fechaConsulta      DateTime          @default(now()) @db.Timestamptz(3)
+  estado             EstadoConsulta    @default(PENDIENTE)
+  cantidadResultados Int?
+  duracionMs         Int?
+  codigoError        String?
+
+  solicitud Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Restrict)
+
+  @@index([solicitudId, fechaConsulta])
+  @@index([categoria, fechaConsulta])
+  @@map("consultas")
+}
+model CorrelativoControl {
+  pais          String @db.VarChar(2)
+  anio          Int
+  ultimoNumero  Int    @default(0)
+
+  @@id([pais, anio])
+  @@map("correlativos_control")
+}
